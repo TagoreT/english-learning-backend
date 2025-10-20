@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { userController } from '../controllers/userController';
 import { authenticate } from '../middlewares/authMiddleware';
 import { requireAdmin } from '../middlewares/roleBasedAccess';
+import { validateBody, validateQuery } from '../middlewares/zodValidator';
 import { updateProfileSchema, updateAvatarSchema, getUsersQuerySchema } from '../validators/userValidator';
 
 export async function userRoutes(fastify: FastifyInstance) {
@@ -10,8 +11,8 @@ export async function userRoutes(fastify: FastifyInstance) {
 
   // User profile routes
   fastify.put('/profile', {
+    preHandler: [validateBody(updateProfileSchema)],
     schema: {
-      body: updateProfileSchema,
       tags: ['Users'],
       description: 'Update user profile',
     },
@@ -19,8 +20,8 @@ export async function userRoutes(fastify: FastifyInstance) {
   });
 
   fastify.put('/avatar', {
+    preHandler: [validateBody(updateAvatarSchema)],
     schema: {
-      body: updateAvatarSchema,
       tags: ['Users'],
       description: 'Update user avatar',
     },
@@ -55,13 +56,12 @@ export async function userRoutes(fastify: FastifyInstance) {
 
   // Admin routes
   fastify.get('/all', {
-    preHandler: [requireAdmin],
+    preHandler: [requireAdmin, validateQuery(getUsersQuerySchema)],
     schema: {
-      querystring: getUsersQuerySchema,
       tags: ['Users', 'Admin'],
       description: 'Get all users (Admin only)',
     },
-    handler: userController.getAllUsers.bind(userController),
+    handler: userController.getAllUsers.bind(userController) as any,
   });
 
   fastify.delete('/:userId', {
@@ -70,6 +70,6 @@ export async function userRoutes(fastify: FastifyInstance) {
       tags: ['Users', 'Admin'],
       description: 'Delete user (Admin only)',
     },
-    handler: userController.deleteUser.bind(userController),
+    handler: userController.deleteUser.bind(userController) as any,
   });
 }

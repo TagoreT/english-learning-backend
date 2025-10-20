@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { authController } from '../controllers/authController';
 import { authenticate } from '../middlewares/authMiddleware';
+import { validateBody } from '../middlewares/zodValidator';
 import {
   registerSchema,
   loginSchema,
@@ -14,8 +15,8 @@ import {
 export async function authRoutes(fastify: FastifyInstance) {
   // Public routes
   fastify.post('/register', {
+    preHandler: [validateBody(registerSchema)],
     schema: {
-      body: registerSchema,
       tags: ['Authentication'],
       description: 'Register a new user',
     },
@@ -23,8 +24,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/login', {
+    preHandler: [validateBody(loginSchema)],
     schema: {
-      body: loginSchema,
       tags: ['Authentication'],
       description: 'Login user',
     },
@@ -32,8 +33,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/refresh-token', {
+    preHandler: [validateBody(refreshTokenSchema)],
     schema: {
-      body: refreshTokenSchema,
       tags: ['Authentication'],
       description: 'Refresh access token',
     },
@@ -41,8 +42,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/verify-email', {
+    preHandler: [validateBody(verifyEmailSchema)],
     schema: {
-      body: verifyEmailSchema,
       tags: ['Authentication'],
       description: 'Verify email address',
     },
@@ -50,8 +51,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/forgot-password', {
+    preHandler: [validateBody(forgotPasswordSchema)],
     schema: {
-      body: forgotPasswordSchema,
       tags: ['Authentication'],
       description: 'Request password reset',
     },
@@ -59,8 +60,8 @@ export async function authRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/reset-password', {
+    preHandler: [validateBody(resetPasswordSchema)],
     schema: {
-      body: resetPasswordSchema,
       tags: ['Authentication'],
       description: 'Reset password with token',
     },
@@ -78,13 +79,12 @@ export async function authRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/change-password', {
-    preHandler: [authenticate],
+    preHandler: [authenticate, validateBody(changePasswordSchema)],
     schema: {
-      body: changePasswordSchema,
       tags: ['Authentication'],
       description: 'Change password',
     },
-    handler: authController.changePassword.bind(authController),
+    handler: authController.changePassword.bind(authController) as any,
   });
 
   fastify.get('/profile', {
@@ -93,6 +93,6 @@ export async function authRoutes(fastify: FastifyInstance) {
       tags: ['Authentication'],
       description: 'Get current user profile',
     },
-    handler: authController.getProfile.bind(authController),
+    handler: authController.getProfile.bind(authController) as any,
   });
 }

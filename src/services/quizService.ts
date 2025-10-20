@@ -1,5 +1,5 @@
 import { prisma } from '../config/database';
-import { NotFoundError, ConflictError, AuthorizationError } from '../utils/errors';
+import { NotFoundError, AuthorizationError } from '../utils/errors';
 import { ERROR_MESSAGES } from '../constants/messages';
 import { ErrorCode } from '../constants/errorCodes';
 
@@ -90,7 +90,7 @@ export class QuizService {
     }
 
     // Check if user has attempted this quiz
-    let attempts = [];
+    let attempts: any[] = [];
     if (userId) {
       attempts = await prisma.quizAttempt.findMany({
         where: {

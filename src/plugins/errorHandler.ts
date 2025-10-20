@@ -7,7 +7,7 @@ import { ERROR_MESSAGES } from '../constants/messages';
 
 export async function errorHandlerPlugin(fastify: FastifyInstance) {
   fastify.setErrorHandler(
-    async (error: FastifyError | AppError | Error, request: FastifyRequest, reply: FastifyReply) => {
+    async (error: FastifyError | AppError | Error, _request: FastifyRequest, reply: FastifyReply) => {
       // Log error
       fastify.log.error(error);
 

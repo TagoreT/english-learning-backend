@@ -11,7 +11,7 @@ export class SubscriptionService {
   async createSubscription(
     userId: string,
     planId: string,
-    couponCode?: string
+    _couponCode?: string
   ): Promise<any> {
     const plan = await prisma.plan.findUnique({
       where: { id: planId },

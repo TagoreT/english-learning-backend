@@ -59,7 +59,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   }
 
   // Health check route
-  fastify.get('/health', async (request, reply) => {
+  fastify.get('/health', async () => {
     const dbHealthy = await checkDatabaseConnection();
     const redisHealthy = await checkRedisConnection();
 

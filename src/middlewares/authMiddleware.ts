@@ -20,7 +20,7 @@ declare module 'fastify' {
 /**
  * Authentication middleware to verify JWT token
  */
-export const authenticate = async (request: FastifyRequest, reply: FastifyReply) => {
+export const authenticate = async (request: FastifyRequest, _reply: FastifyReply) => {
   try {
     // Extract token from Authorization header
     const authHeader = request.headers.authorization;
@@ -84,12 +84,12 @@ export const authenticate = async (request: FastifyRequest, reply: FastifyReply)
 /**
  * Optional authentication - doesn't fail if no token provided
  */
-export const optionalAuthenticate = async (request: FastifyRequest, reply: FastifyReply) => {
+export const optionalAuthenticate = async (request: FastifyRequest, _reply: FastifyReply) => {
   try {
     const authHeader = request.headers.authorization;
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      await authenticate(request, reply);
+      await authenticate(request, _reply);
     }
   } catch (error) {
     // Silently fail for optional auth
@@ -99,7 +99,7 @@ export const optionalAuthenticate = async (request: FastifyRequest, reply: Fasti
 /**
  * Middleware to check if email is verified
  */
-export const requireEmailVerification = async (request: FastifyRequest, reply: FastifyReply) => {
+export const requireEmailVerification = async (request: FastifyRequest, _reply: FastifyReply) => {
   if (!request.user) {
     throw new AuthenticationError(ERROR_MESSAGES.UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
   }

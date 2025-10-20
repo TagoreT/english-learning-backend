@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 import { AuthenticationError } from './errors';
 import { ERROR_MESSAGES } from '../constants/messages';
@@ -26,8 +26,8 @@ export class JwtHelper {
    */
   static generateAccessToken(payload: JwtPayload): string {
     return jwt.sign(payload, this.ACCESS_TOKEN_SECRET, {
-      expiresIn: this.ACCESS_TOKEN_EXPIRES_IN,
-    });
+      expiresIn: this.ACCESS_TOKEN_EXPIRES_IN as string | number,
+    } as SignOptions);
   }
 
   /**
@@ -35,8 +35,8 @@ export class JwtHelper {
    */
   static generateRefreshToken(payload: JwtPayload): string {
     return jwt.sign(payload, this.REFRESH_TOKEN_SECRET, {
-      expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
-    });
+      expiresIn: this.REFRESH_TOKEN_EXPIRES_IN as string | number,
+    } as SignOptions);
   }
 
   /**

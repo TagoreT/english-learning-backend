@@ -8,7 +8,7 @@ import { UserRole, hasPermission, PERMISSIONS } from '../constants/roles';
  * Checks if user has the required role
  */
 export const requireRole = (...allowedRoles: UserRole[]) => {
-  return async (request: FastifyRequest, reply: FastifyReply) => {
+  return async (request: FastifyRequest, _reply: FastifyReply) => {
     if (!request.user) {
       throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
     }
@@ -25,7 +25,7 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
  * Check if user has minimum required role (hierarchical)
  */
 export const requireMinimumRole = (minimumRole: UserRole) => {
-  return async (request: FastifyRequest, reply: FastifyReply) => {
+  return async (request: FastifyRequest, _reply: FastifyReply) => {
     if (!request.user) {
       throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
     }
@@ -42,7 +42,7 @@ export const requireMinimumRole = (minimumRole: UserRole) => {
  * Check if user has specific permission
  */
 export const requirePermission = (permission: keyof typeof PERMISSIONS) => {
-  return async (request: FastifyRequest, reply: FastifyReply) => {
+  return async (request: FastifyRequest, _reply: FastifyReply) => {
     if (!request.user) {
       throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
     }
@@ -60,7 +60,7 @@ export const requirePermission = (permission: keyof typeof PERMISSIONS) => {
  * Check if user is accessing their own resource
  */
 export const requireOwnership = (userIdField = 'userId') => {
-  return async (request: FastifyRequest, reply: FastifyReply) => {
+  return async (request: FastifyRequest, _reply: FastifyReply) => {
     if (!request.user) {
       throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
     }
@@ -83,7 +83,7 @@ export const requireOwnership = (userIdField = 'userId') => {
 /**
  * Middleware to check if user is an instructor
  */
-export const requireInstructor = async (request: FastifyRequest, reply: FastifyReply) => {
+export const requireInstructor = async (request: FastifyRequest, _reply: FastifyReply) => {
   if (!request.user) {
     throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
   }
@@ -98,7 +98,7 @@ export const requireInstructor = async (request: FastifyRequest, reply: FastifyR
 /**
  * Middleware to check if user is an admin
  */
-export const requireAdmin = async (request: FastifyRequest, reply: FastifyReply) => {
+export const requireAdmin = async (request: FastifyRequest, _reply: FastifyReply) => {
   if (!request.user) {
     throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
   }
@@ -113,7 +113,7 @@ export const requireAdmin = async (request: FastifyRequest, reply: FastifyReply)
 /**
  * Middleware to check if user is a superadmin
  */
-export const requireSuperAdmin = async (request: FastifyRequest, reply: FastifyReply) => {
+export const requireSuperAdmin = async (request: FastifyRequest, _reply: FastifyReply) => {
   if (!request.user) {
     throw new AuthorizationError(ERROR_MESSAGES.UNAUTHORIZED);
   }

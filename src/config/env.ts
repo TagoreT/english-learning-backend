@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import dotenvFlow from 'dotenv-flow';
 
 // Load environment variables
@@ -13,6 +12,7 @@ interface EnvConfig {
 
   // Database
   DATABASE_URL: string;
+  DIRECT_URL?: string; // For Supabase/migrations
 
   // Redis
   REDIS_HOST: string;
@@ -127,6 +127,7 @@ export const env: EnvConfig = {
 
   // Database
   DATABASE_URL: getEnvValue('DATABASE_URL'),
+  DIRECT_URL: process.env.DIRECT_URL,
 
   // Redis
   REDIS_HOST: getEnvValue('REDIS_HOST', 'localhost'),

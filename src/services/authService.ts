@@ -3,14 +3,14 @@ import { JwtHelper, TokenPair } from '../utils/jwtHelper';
 import { PasswordHelper } from '../utils/password';
 import { emailService } from '../utils/email';
 import { generateReferralCode, generateVerificationToken, generateResetToken } from '../utils/referralCode';
-import { cacheSet, cacheDel, cacheGet } from '../config/redis';
+import { cacheSet, cacheDel } from '../config/redis';
 import {
   AuthenticationError,
   NotFoundError,
   ConflictError,
   ValidationError,
 } from '../utils/errors';
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/messages';
+import { ERROR_MESSAGES } from '../constants/messages';
 import { ErrorCode } from '../constants/errorCodes';
 import { env } from '../config/env';
 
