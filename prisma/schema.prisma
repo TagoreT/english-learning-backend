@@ -1,0 +1,466 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  INSTRUCTOR
+  ADMIN
+  SUPERADMIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  REFUND
+  WITHDRAWAL
+  PAYMENT
+  REFERRAL_BONUS
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSED
+}
+
+enum QuizDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum CourseContentType {
+  VIDEO
+  PDF
+  QUIZ
+  AUDIO
+  TEXT
+}
+
+enum LanguageLevel {
+  A1_BEGINNER
+  A2_ELEMENTARY
+  B1_INTERMEDIATE
+  B2_UPPER_INTERMEDIATE
+  C1_ADVANCED
+  C2_PROFICIENCY
+}
+
+// 1. Users Table
+model User {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  fullName          String
+  avatarUrl         String?
+  hashedPassword    String
+  role              UserRole        @default(USER)
+  referralCode      String          @unique
+  walletBalance     Float           @default(0)
+  isVerified        Boolean         @default(false)
+  verificationToken String?
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  profile           UserProfile?
+  instructor        Instructor?
+  subscriptions     Subscription[]
+  transactions      Transaction[]
+  withdrawals       WalletWithdrawal[]
+  quizAttempts      QuizAttempt[]
+  pronunciations    Pronunciation[]
+  referralsGiven    Referral[]      @relation("ReferrerReferrals")
+  referralsReceived Referral[]      @relation("RefereeReferrals")
+  callsAsCaller     Call[]          @relation("CallerCalls")
+  callsAsCallee     Call[]          @relation("CalleeCalls")
+  admin             Admin?
+  auditLogs         AuditLog[]
+  topicsSuggested   Topic[]
+  enrollments       CourseEnrollment[]
+
+  @@index([email])
+  @@index([referralCode])
+  @@map("users")
+}
+
+// 2. User Profiles Table
+model UserProfile {
+  id            String        @id @default(uuid())
+  userId        String        @unique
+  bio           String?
+  learningGoals String?
+  languageLevel LanguageLevel @default(A1_BEGINNER)
+  timezone      String        @default("UTC")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// 3. Instructors Table
+model Instructor {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  approved  Boolean  @default(false)
+  bio       String?
+  rating    Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courses Course[]
+
+  @@map("instructors")
+}
+
+// 4. Courses Table
+model Course {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  instructorId String
+  price        Float    @default(0)
+  categories   String[] @default([])
+  tags         String[] @default([])
+  isPublished  Boolean  @default(false)
+  thumbnailUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  instructor   Instructor         @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  content      CourseContent[]
+  quizzes      Quiz[]
+  enrollments  CourseEnrollment[]
+
+  @@index([instructorId])
+  @@index([isPublished])
+  @@map("courses")
+}
+
+// 5. Course Content Table
+model CourseContent {
+  id         String            @id @default(uuid())
+  courseId   String
+  type       CourseContentType
+  title      String
+  metadata   Json              // Stores URL, duration, file info, etc.
+  position   Int
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, position])
+  @@map("course_content")
+}
+
+// Course Enrollment Table
+model CourseEnrollment {
+  id           String   @id @default(uuid())
+  userId       String
+  courseId     String
+  enrolledAt   DateTime @default(now())
+  completedAt  DateTime?
+  progress     Float    @default(0) // Percentage 0-100
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("course_enrollments")
+}
+
+// 6. Subscriptions Table
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String
+  planId    String
+  status    SubscriptionStatus @default(TRIAL)
+  startDate DateTime           @default(now())
+  endDate   DateTime
+  autoRenew Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// 7. Plans Table
+model Plan {
+  id            String         @id @default(uuid())
+  name          String
+  interval      String         // "monthly", "yearly"
+  price         Float
+  trialDays     Int            @default(0)
+  features      Json           @default("{}")
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+// 8. Coupons Table
+model Coupon {
+  id           String       @id @default(uuid())
+  code         String       @unique
+  discountType DiscountType
+  value        Float
+  expiresAt    DateTime?
+  usageLimit   Int?
+  usedCount    Int          @default(0)
+  multiTier    Json?        // For complex tiered discounts
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([code])
+  @@map("coupons")
+}
+
+// 9. Referrals Table
+model Referral {
+  id           String         @id @default(uuid())
+  referrerId   String
+  refereeId    String
+  rewardAmount Float
+  status       ReferralStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  referrer User @relation("ReferrerReferrals", fields: [referrerId], references: [id])
+  referee  User @relation("RefereeReferrals", fields: [refereeId], references: [id])
+
+  @@unique([referrerId, refereeId])
+  @@index([referrerId])
+  @@index([refereeId])
+  @@map("referrals")
+}
+
+// 10. Transactions Table
+model Transaction {
+  id        String            @id @default(uuid())
+  userId    String
+  amount    Float
+  type      TransactionType
+  status    TransactionStatus @default(PENDING)
+  gatewayId String?           // Stripe/Razorpay transaction ID
+  metadata  Json?             // Additional payment info
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("transactions")
+}
+
+// 11. Wallet Withdrawals Table
+model WalletWithdrawal {
+  id            String           @id @default(uuid())
+  userId        String
+  amount        Float
+  status        WithdrawalStatus @default(PENDING)
+  requestDate   DateTime         @default(now())
+  processedDate DateTime?
+  notes         String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("wallet_withdrawals")
+}
+
+// 12. Quizzes Table
+model Quiz {
+  id             String         @id @default(uuid())
+  courseId       String
+  title          String
+  difficulty     QuizDifficulty @default(BEGINNER)
+  unlockSequence Int            @default(0)
+  passingScore   Float          @default(70)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  course    Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([courseId])
+  @@map("quizzes")
+}
+
+// 13. Quiz Questions Table
+model QuizQuestion {
+  id            String   @id @default(uuid())
+  quizId        String
+  questionData  Json     // Contains question text, options, type (multiple choice, etc.)
+  correctAnswer Json     // Stores correct answer(s)
+  points        Float    @default(1)
+  position      Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+  @@map("quiz_questions")
+}
+
+// 14. Quiz Attempts Table
+model QuizAttempt {
+  id        String   @id @default(uuid())
+  userId    String
+  quizId    String
+  score     Float
+  details   Json     // Stores answers, time taken, etc.
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@map("quiz_attempts")
+}
+
+// 15. Pronunciations Table
+model Pronunciation {
+  id          String   @id @default(uuid())
+  userId      String
+  contentText String
+  audioUrl    String
+  scoreJson   Json?    // Azure Speech API response
+  feedback    String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("pronunciations")
+}
+
+// 16. Topics Table
+model Topic {
+  id          String   @id @default(uuid())
+  title       String
+  category    String
+  suggestedBy String?  // User ID if user-suggested
+  isPublic    Boolean  @default(true)
+  content     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  suggestor User? @relation(fields: [suggestedBy], references: [id], onDelete: SetNull)
+
+  @@index([category])
+  @@index([isPublic])
+  @@map("topics")
+}
+
+// 17. Calls Table
+model Call {
+  id          String    @id @default(uuid())
+  callerId    String
+  calleeId    String
+  roomId      String    @unique
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  recordingUrl String?
+  duration    Int?      // Duration in seconds
+
+  caller User @relation("CallerCalls", fields: [callerId], references: [id])
+  callee User @relation("CalleeCalls", fields: [calleeId], references: [id])
+
+  @@index([callerId])
+  @@index([calleeId])
+  @@map("calls")
+}
+
+// 18. Admins Table
+model Admin {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  permissions Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+// 19. Audit Logs Table
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String?
+  payload    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
