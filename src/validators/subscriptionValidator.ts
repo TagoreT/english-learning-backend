@@ -38,3 +38,13 @@ export const cancelSubscriptionSchema = z.object({
 });
 
 export type CancelSubscriptionInput = z.infer<typeof cancelSubscriptionSchema>;
+
+// Alias for backward compatibility
+export const subscribeSchema = createSubscriptionSchema;
+
+// Change plan schema
+export const changePlanSchema = z.object({
+  newPlanId: z.string().uuid(),
+});
+
+export type ChangePlanInput = z.infer<typeof changePlanSchema>;

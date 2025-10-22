@@ -1,32 +1,30 @@
 import { FastifyInstance } from 'fastify';
 import { userController } from '../controllers/userController';
-import { authenticate } from '../middlewares/authMiddleware';
-import { requireAdmin } from '../middlewares/roleBasedAccess';
-import { validateBody, validateQuery } from '../middlewares/zodValidator';
+import { authMiddleware } from '../middlewares/auth';
+import { requireAdmin } from '../middlewares/role';
+import { zodValidationMiddleware, validateQuery } from '../middlewares/zodValidation';
 import { updateProfileSchema, updateAvatarSchema, getUsersQuerySchema } from '../validators/userValidator';
 
 export async function userRoutes(fastify: FastifyInstance) {
   // All user routes require authentication
-  fastify.addHook('preHandler', authenticate);
+  fastify.addHook('preHandler', authMiddleware);
 
   // User profile routes
   fastify.put('/profile', {
-    preHandler: [validateBody(updateProfileSchema)],
+    preHandler: [zodValidationMiddleware(updateProfileSchema)],
     schema: {
       tags: ['Users'],
       description: 'Update user profile',
     },
-    handler: userController.updateProfile.bind(userController),
-  });
+  }, userController.updateProfile);
 
   fastify.put('/avatar', {
-    preHandler: [validateBody(updateAvatarSchema)],
+    preHandler: [zodValidationMiddleware(updateAvatarSchema)],
     schema: {
       tags: ['Users'],
       description: 'Update user avatar',
     },
-    handler: userController.updateAvatar.bind(userController),
-  });
+  }, userController.updateAvatar);
 
   // Wallet routes
   fastify.get('/wallet', {
@@ -34,16 +32,14 @@ export async function userRoutes(fastify: FastifyInstance) {
       tags: ['Users'],
       description: 'Get wallet balance',
     },
-    handler: userController.getWalletBalance.bind(userController),
-  });
+  }, userController.getWalletBalance);
 
   fastify.get('/transactions', {
     schema: {
       tags: ['Users'],
       description: 'Get user transactions',
     },
-    handler: userController.getTransactions.bind(userController),
-  });
+  }, userController.getTransactions);
 
   // Stats
   fastify.get('/stats', {
@@ -51,8 +47,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       tags: ['Users'],
       description: 'Get user statistics',
     },
-    handler: userController.getUserStats.bind(userController),
-  });
+  }, userController.getUserStats);
 
   // Admin routes
   fastify.get('/all', {
@@ -61,8 +56,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       tags: ['Users', 'Admin'],
       description: 'Get all users (Admin only)',
     },
-    handler: userController.getAllUsers.bind(userController) as any,
-  });
+  }, userController.getAllUsers);
 
   fastify.delete('/:userId', {
     preHandler: [requireAdmin],
@@ -70,6 +64,5 @@ export async function userRoutes(fastify: FastifyInstance) {
       tags: ['Users', 'Admin'],
       description: 'Delete user (Admin only)',
     },
-    handler: userController.deleteUser.bind(userController) as any,
-  });
+  }, userController.deleteUser);
 }

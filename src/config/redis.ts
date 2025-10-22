@@ -50,10 +50,15 @@ export const checkRedisConnection = async (): Promise<boolean> => {
   }
 };
 
-// Cache helper functions
+// Cache helper functions with graceful error handling
 export const cacheGet = async (key: string): Promise<string | null> => {
-  const client = getRedisClient();
-  return await client.get(key);
+  try {
+    const client = getRedisClient();
+    return await client.get(key);
+  } catch (error) {
+    console.error('Redis cacheGet error:', error);
+    return null; // Return null if Redis is unavailable
+  }
 };
 
 export const cacheSet = async (
@@ -61,21 +66,36 @@ export const cacheSet = async (
   value: string,
   expiresInSeconds?: number
 ): Promise<void> => {
-  const client = getRedisClient();
-  if (expiresInSeconds) {
-    await client.set(key, value, 'EX', expiresInSeconds);
-  } else {
-    await client.set(key, value);
+  try {
+    const client = getRedisClient();
+    if (expiresInSeconds) {
+      await client.set(key, value, 'EX', expiresInSeconds);
+    } else {
+      await client.set(key, value);
+    }
+  } catch (error) {
+    console.error('Redis cacheSet error:', error);
+    // Silently fail - caching is not critical
   }
 };
 
 export const cacheDel = async (key: string): Promise<void> => {
-  const client = getRedisClient();
-  await client.del(key);
+  try {
+    const client = getRedisClient();
+    await client.del(key);
+  } catch (error) {
+    console.error('Redis cacheDel error:', error);
+    // Silently fail - cache deletion is not critical
+  }
 };
 
 export const cacheExists = async (key: string): Promise<boolean> => {
-  const client = getRedisClient();
-  const result = await client.exists(key);
-  return result === 1;
+  try {
+    const client = getRedisClient();
+    const result = await client.exists(key);
+    return result === 1;
+  } catch (error) {
+    console.error('Redis cacheExists error:', error);
+    return false; // Return false if Redis is unavailable
+  }
 };

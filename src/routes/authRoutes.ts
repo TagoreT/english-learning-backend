@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { authController } from '../controllers/authController';
-import { authenticate } from '../middlewares/authMiddleware';
-import { validateBody } from '../middlewares/zodValidator';
+import { authMiddleware } from '../middlewares/auth';
+import { zodValidationMiddleware } from '../middlewares/zodValidation';
 import {
   registerSchema,
   loginSchema,
@@ -15,84 +15,75 @@ import {
 export async function authRoutes(fastify: FastifyInstance) {
   // Public routes
   fastify.post('/register', {
-    preHandler: [validateBody(registerSchema)],
+    preHandler: [zodValidationMiddleware(registerSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Register a new user',
     },
-    handler: authController.register.bind(authController),
-  });
+  }, authController.register);
 
   fastify.post('/login', {
-    preHandler: [validateBody(loginSchema)],
+    preHandler: [zodValidationMiddleware(loginSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Login user',
     },
-    handler: authController.login.bind(authController),
-  });
+  }, authController.login);
 
   fastify.post('/refresh-token', {
-    preHandler: [validateBody(refreshTokenSchema)],
+    preHandler: [zodValidationMiddleware(refreshTokenSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Refresh access token',
     },
-    handler: authController.refreshToken.bind(authController),
-  });
+  }, authController.refreshToken);
 
   fastify.post('/verify-email', {
-    preHandler: [validateBody(verifyEmailSchema)],
+    preHandler: [zodValidationMiddleware(verifyEmailSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Verify email address',
     },
-    handler: authController.verifyEmail.bind(authController),
-  });
+  }, authController.verifyEmail);
 
   fastify.post('/forgot-password', {
-    preHandler: [validateBody(forgotPasswordSchema)],
+    preHandler: [zodValidationMiddleware(forgotPasswordSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Request password reset',
     },
-    handler: authController.forgotPassword.bind(authController),
-  });
+  }, authController.forgotPassword);
 
   fastify.post('/reset-password', {
-    preHandler: [validateBody(resetPasswordSchema)],
+    preHandler: [zodValidationMiddleware(resetPasswordSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Reset password with token',
     },
-    handler: authController.resetPassword.bind(authController),
-  });
+  }, authController.resetPassword);
 
   // Protected routes
   fastify.post('/logout', {
-    preHandler: [authenticate],
+    preHandler: [authMiddleware],
     schema: {
       tags: ['Authentication'],
       description: 'Logout user',
     },
-    handler: authController.logout.bind(authController),
-  });
+  }, authController.logout);
 
   fastify.post('/change-password', {
-    preHandler: [authenticate, validateBody(changePasswordSchema)],
+    preHandler: [authMiddleware, zodValidationMiddleware(changePasswordSchema)],
     schema: {
       tags: ['Authentication'],
       description: 'Change password',
     },
-    handler: authController.changePassword.bind(authController) as any,
-  });
+  }, authController.changePassword);
 
   fastify.get('/profile', {
-    preHandler: [authenticate],
+    preHandler: [authMiddleware],
     schema: {
       tags: ['Authentication'],
       description: 'Get current user profile',
     },
-    handler: authController.getProfile.bind(authController) as any,
-  });
+  }, authController.getProfile);
 }

@@ -8,6 +8,17 @@ import { errorHandlerPlugin } from './plugins/errorHandler';
 import { swaggerPlugin } from './plugins/swagger';
 import { authRoutes } from './routes/authRoutes';
 import { userRoutes } from './routes/userRoutes';
+import { courseRoutes } from './routes/courseRoutes';
+import { quizRoutes } from './routes/quizRoutes';
+import { subscriptionRoutes } from './routes/subscriptionRoutes';
+import { paymentRoutes } from './routes/paymentRoutes';
+import { uploadRoutes } from './routes/uploadRoutes';
+import { referralRoutes } from './routes/referralRoutes';
+import { couponRoutes } from './routes/couponRoutes';
+import { instructorRoutes } from './routes/instructorRoutes';
+import { topicRoutes } from './routes/topicRoutes';
+import { pronunciationRoutes } from './routes/pronunciationRoutes';
+import { adminRoutes } from './routes/adminRoutes';
 import { checkDatabaseConnection } from './config/database';
 import { checkRedisConnection } from './config/redis';
 
@@ -80,6 +91,17 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   await fastify.register(authRoutes, { prefix: `${apiPrefix}/auth` });
   await fastify.register(userRoutes, { prefix: `${apiPrefix}/users` });
+  await fastify.register(courseRoutes, { prefix: `${apiPrefix}/courses` });
+  await fastify.register(quizRoutes, { prefix: `${apiPrefix}/quizzes` });
+  await fastify.register(subscriptionRoutes, { prefix: `${apiPrefix}/subscriptions` });
+  await fastify.register(paymentRoutes, { prefix: `${apiPrefix}/payments` });
+  await fastify.register(uploadRoutes, { prefix: `${apiPrefix}/upload` });
+  await fastify.register(referralRoutes, { prefix: `${apiPrefix}/referrals` });
+  await fastify.register(couponRoutes, { prefix: `${apiPrefix}/coupons` });
+  await fastify.register(instructorRoutes, { prefix: `${apiPrefix}/instructors` });
+  await fastify.register(topicRoutes, { prefix: `${apiPrefix}/topics` });
+  await fastify.register(pronunciationRoutes, { prefix: `${apiPrefix}/pronunciation` });
+  await fastify.register(adminRoutes, { prefix: `${apiPrefix}/admin` });
 
   // 404 handler
   fastify.setNotFoundHandler((request, reply) => {

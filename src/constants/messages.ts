@@ -19,7 +19,12 @@ export const SUCCESS_MESSAGES = {
   COURSE_UPDATED: 'Course updated successfully.',
   COURSE_DELETED: 'Course deleted successfully.',
   COURSE_PUBLISHED: 'Course published successfully.',
-  ENROLLED_SUCCESS: 'Enrolled in course successfully.',
+  COURSE_FETCHED: 'Course fetched successfully.',
+  COURSES_FETCHED: 'Courses fetched successfully.',
+  ENROLLMENT_SUCCESS: 'Enrolled in course successfully.',
+  ENROLLMENTS_FETCHED: 'Enrollments fetched successfully.',
+  PROGRESS_UPDATED: 'Course progress updated successfully.',
+  CONTENT_ADDED: 'Course content added successfully.',
 
   // Quiz
   QUIZ_CREATED: 'Quiz created successfully.',
@@ -44,10 +49,23 @@ export const SUCCESS_MESSAGES = {
   // Coupon
   COUPON_APPLIED: 'Coupon applied successfully.',
   COUPON_CREATED: 'Coupon created successfully.',
+  COUPON_UPDATED: 'Coupon updated successfully.',
+  COUPON_DELETED: 'Coupon deleted successfully.',
+
+  // Referral
+  REFERRAL_CLAIMED: 'Referral reward claimed successfully.',
 
   // Topic
   TOPIC_CREATED: 'Topic created successfully.',
   TOPIC_UPDATED: 'Topic updated successfully.',
+  TOPIC_DELETED: 'Topic deleted successfully.',
+
+  // File Upload
+  FILE_UPLOAD_SUCCESS: 'File uploaded successfully.',
+  FILE_DELETE_SUCCESS: 'File deleted successfully.',
+
+  // Admin
+  USER_ROLE_UPDATED: 'User role updated successfully.',
 
   // Pronunciation
   PRONUNCIATION_SUBMITTED: 'Pronunciation submitted for evaluation.',

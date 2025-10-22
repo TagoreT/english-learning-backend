@@ -46,6 +46,9 @@ export const submitQuizAttemptSchema = z.object({
 
 export type SubmitQuizAttemptInput = z.infer<typeof submitQuizAttemptSchema>;
 
+// Alias for backward compatibility
+export const submitQuizSchema = submitQuizAttemptSchema;
+
 // Get quizzes query
 export const getQuizzesQuerySchema = z.object({
   courseId: z.string().uuid().optional(),
